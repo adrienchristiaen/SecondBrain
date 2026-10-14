@@ -1,0 +1,16 @@
+# Configuration du Second Brain. Tout est optionnel: les défauts vivent dans phoenix_cli/core/config.py.
+[budget]
+usd = 200.0
+period = "year"
+
+# Prix en USD par million de tokens. À ajuster selon tes abonnements.
+[prices."gemini-pro"]
+in = 1.25
+out = 10.0
+
+[prices."gemini-flash"]
+in = 0.30
+out = 2.50
+
+[datahub]
+url = ""   # ex: https://datahub.exemple.interne ; token via la variable DATAHUB_TOKEN

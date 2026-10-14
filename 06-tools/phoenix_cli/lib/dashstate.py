@@ -1,0 +1,32 @@
+"""État du dashboard: une seule structure JSON agrégeant tokens, repos, graphes, liens, obsolescence."""
+import time
+from datetime import datetime, timezone
+
+from ..commands import fr, tokens, usage
+from ..core import jsonl
+from . import gitrun, graphast, network
+
+DOCS = ("README.md", "ARCHITECTURE.md", "GRAPH.md")
+
+
+def build_state(ctx, now=None):
+    now = now or time.time()
+    paths = gitrun.discover(ctx.layout("repos"))
+    wiki = ctx.layout("wiki")
+    repos = []
+    for path in paths:
+        st = gitrun.status(path, ctx.cfg["git"]["branches"])
+        st["graph"] = graphast.freshness(path, wiki / "graphs" / f"{path.name}.md", st["last_commit"], now)
+        st["docs"] = [d for d in DOCS if (path / d).is_file()]
+        st["card"] = (wiki / "repos" / f"{path.name}.md").is_file()
+        repos.append(st)
+    events = jsonl.read(ctx.state / "usage.jsonl")
+    return {
+        "generated_at": datetime.fromtimestamp(now, timezone.utc).isoformat(),
+        "tokens": tokens.summary(ctx, datetime.fromtimestamp(now, timezone.utc)),
+        "repos": repos,
+        "edges": network.edges(paths),
+        "obsolete": [r for r in usage.candidates(ctx, now) if r["verdict"] != "keep"],
+        "feature_requests": len(fr.open_requests(ctx)),
+        "recent": events[-15:][::-1],
+    }

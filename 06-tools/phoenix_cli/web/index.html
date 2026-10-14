@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Second Brain</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--fg:#e6e8ee;--mut:#8b91a0;--ok:#3ecf8e;--warn:#f5a524;--bad:#f0616d;--acc:#6ea8fe}
+@media(prefers-color-scheme:light){:root{--bg:#f5f6f8;--card:#fff;--fg:#1b1e25;--mut:#666d7c}}
+body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+header{display:flex;gap:12px;align-items:center;padding:12px 20px}h1{font-size:18px;margin:0;flex:1}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;padding:0 20px 20px}
+section{background:var(--card);border-radius:10px;padding:14px;overflow:auto}h2{font-size:13px;margin:0 0 10px;color:var(--mut);text-transform:uppercase}
+table{width:100%;border-collapse:collapse}td,th{padding:4px 6px;text-align:left;border-bottom:1px solid #8883}
+button{background:var(--acc);color:#000;border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
+.bar{height:10px;background:#8883;border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.mut{color:var(--mut)}
+svg text{fill:var(--fg);font-size:11px}
+</style></head><body>
+<header><h1>Second Brain</h1><span id="ts" class="mut"></span><button id="sync">Sync Git</button></header>
+<main>
+<section><h2>Budget tokens</h2><div id="tok"></div></section>
+<section><h2>Réseau des repos</h2><svg id="net" viewBox="0 0 400 300" width="100%"></svg></section>
+<section style="grid-column:1/-1"><h2>Repos, Graphify et docs</h2><table id="repos"></table></section>
+<section><h2>À supprimer ou archiver</h2><div id="obs"></div></section>
+<section><h2>Commandes récentes</h2><div id="recent"></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function load(){
+  let s; try{s=await (await fetch('/api/state')).json()}catch(e){s=await (await fetch('state.json')).json(); $('sync').disabled=true}
+  const t=s.tokens, pct=Math.min(100,100*t.spent_usd/t.budget_usd);
+  $('ts').textContent=s.generated_at.slice(0,19).replace('T',' ');
+  $('tok').innerHTML=`<div class="bar"><i style="width:${pct}%;background:${t.over_budget?'var(--bad)':'var(--ok)'}"></i></div>
+   <p><b>${t.spent_usd.toFixed(2)}</b> / ${t.budget_usd} USD (${t.period}) — reste <b>${t.remaining_usd.toFixed(2)}</b></p>
+   <p class="mut">${t.daily_allowance_usd.toFixed(2)} USD/jour · projection ${t.projected_usd} USD</p>
+   <p>Distant ${t.split.remote.tin+t.split.remote.tout} tokens · Local ${t.split.local.tin+t.split.local.tout} tokens</p>`;
+  $('repos').innerHTML='<tr><th>Repo</th><th>Branche</th><th>Retard</th><th>Local</th><th>Graphe</th><th>Docs</th><th>Fiche</th></tr>'+s.repos.map(r=>{
+    const g=!r.graph.exists?'<span class="bad">absent</span>':r.graph.stale?'<span class="warn">périmé</span>':'<span class="ok">frais</span>';
+    return `<tr><td>${esc(r.name)}</td><td>${esc(r.branch)}</td><td>${r.behind??'?'}</td><td>${r.dirty?'<span class="warn">modifié</span>':'propre'}</td><td>${g}</td><td>${r.docs.length}/3</td><td>${r.card?'✓':'<span class="bad">✗</span>'}</td></tr>`}).join('');
+  $('obs').innerHTML=s.obsolete.map(o=>`<div><b class="warn">${o.verdict}</b> ${o.kind} ${esc(o.name)} <span class="mut">(${o.uses} usages)</span></div>`).join('')||'<span class="ok">Rien à nettoyer</span>';
+  $('recent').innerHTML=s.recent.map(e=>`<div>${esc(e.ts.slice(11,19))} ${esc(e.name)} ${esc(e.sub||'')} <span class="${e.rc?'bad':'mut'}">${e.rc??''}</span></div>`).join('');
+  const names=s.repos.map(r=>r.name), pos={}; names.forEach((n,i)=>{const a=2*Math.PI*i/names.length;pos[n]=[200+120*Math.cos(a),150+110*Math.sin(a)]});
+  $('net').innerHTML=s.edges.filter(e=>pos[e.from]&&pos[e.to]).map(e=>`<line x1="${pos[e.from][0]}" y1="${pos[e.from][1]}" x2="${pos[e.to][0]}" y2="${pos[e.to][1]}" stroke="#6ea8fe" stroke-opacity=".6" stroke-width="${Math.min(4,1+e.weight/3)}"/>`).join('')+
+   s.repos.map(r=>`<g><circle cx="${pos[r.name][0]}" cy="${pos[r.name][1]}" r="7" fill="${r.dirty?'#f5a524':r.graph.stale?'#f0616d':'#3ecf8e'}"/><text x="${pos[r.name][0]+10}" y="${pos[r.name][1]+4}">${esc(r.name)}</text></g>`).join('');
+}
+$('sync').onclick=async()=>{$('sync').textContent='Sync…';await fetch('/api/sync',{method:'POST'});$('sync').textContent='Sync Git';load()};
+load();setInterval(load,5000);
+</script></body></html>
