@@ -26,6 +26,7 @@ Une commande = un module dans `commands/` exposant `NAME` et `register(sub)`; `r
 | `usage log/audit` | télémétrie et propositions de décommissionnement | `lib/assets.py` |
 | `datahub <composant>` | lineage, santé, versions | `lib/datahubclient.py` |
 | `dashboard build/serve` | dashboard live ou statique | `lib/dashstate.py`, `lib/dashserver.py`, `web/index.html` |
+| `card` | fiches wiki manquantes depuis README + dossiers | `lib/cardgen.py` |
 | `retex` | constats déterministes de fin de session → `07-archive` | `commands/retex.py` |
 | `fr new/list` | feature requests | `commands/fr.py` |
 | `migrate`, `archive` | réorganisation et event sourcing | `commands/` |
@@ -35,11 +36,15 @@ Chaque commande lancée est journalisée dans `.brain/usage.jsonl`: c'est ce qui
 ## Intégrations
 - **Blinders**: utilisé tel quel s'il est installé (`blind select`), sinon repli lexical. Blinders fournit aussi `blind audit`, `blind graph` (Graphify) et `blind stats`; Phoenix ne les duplique pas.
 - **Graphify**: la santé est lue depuis `graphify-out/` du repo si présent; Phoenix produit son propre graphe AST léger pour Python.
-- **Jira-CLI**: repo géré comme les autres (fiche + graphe); un futur `phoenix jira` pourra l'appeler en sous-processus.
+- **Jira-CLI** (ton outil, distinct de Phoenix): installé à part (`pip install -e 05-repos/Jira-CLI`), appelé en sous-processus pour les plans `--dry-run` depuis le dashboard.
 - **Data Hub**: URL et endpoints dans `phoenix.toml` (`[datahub]`), token via variable d'environnement. Les chemins d'API par défaut sont des hypothèses à ajuster à ton portail.
 
 ## Dashboard
 Serveur `http.server` lié à 127.0.0.1 (stdlib), page unique sans dépendance. `GET /api/state` (agrégat JSON), `POST /api/sync` (pull des repos). `dashboard build` produit une version statique lisible hors serveur (sans bouton de sync). Rafraîchissement toutes les 5 s.
+
+## Pilotage depuis le navigateur
+`POST /api/run {action, params}` n'exécute que la liste blanche de `lib/actions.py` (sync, graphes, fiches, audit, rétex, pack de contexte, plans `jira-cli release|deploy --dry-run`), en argv sans shell, avec validation des paramètres. Les POST exigent l'en-tête `X-Phoenix` et un Host local. Les actions qui modifient Jira ou GitLab restent dans `jira-cli`, avec leur confirmation.
+Le panneau Suggestions vient de `lib/suggest.py` (fonction pure sur l'état): chaque suggestion actionnable a un bouton, et l'état se rafraîchit après chaque action pour enchaîner.
 
 ## Données locales
 `.brain/` (git-ignoré): `tokens.jsonl`, `usage.jsonl`, `dashboard/`.

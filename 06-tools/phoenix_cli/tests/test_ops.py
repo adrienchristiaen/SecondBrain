@@ -3,6 +3,7 @@ import json
 import tempfile
 import threading
 import unittest
+import urllib.error
 import urllib.request
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -81,7 +82,7 @@ class DashboardTest(unittest.TestCase):
             self.assertEqual(state["edges"][0]["to"], "beta-service")
             self.assertIn("remaining_usd", state["tokens"])
             self.assertIn("Second Brain", urllib.request.urlopen(base + "/").read().decode())
-            sync = json.load(urllib.request.urlopen(urllib.request.Request(base + "/api/sync", method="POST")))
+            sync = json.load(urllib.request.urlopen(urllib.request.Request(base + "/api/sync", method="POST", headers={"X-Phoenix": "1"})))
             self.assertEqual(len(sync), 2)
         finally:
             server.shutdown()
@@ -97,3 +98,66 @@ class DashboardTest(unittest.TestCase):
             cli.main(["retex"], ctx)
         self.assertIn("todo.md", buf.getvalue())
         self.assertEqual(len(list(ctx.layout("archive").glob("*/retex-*.md"))), 1)
+
+
+class ActionsTest(unittest.TestCase):
+    def test_validation_and_whitelist(self):
+        from phoenix_cli.lib import actions
+        ctx = make_ctx()
+        self.assertEqual(actions.run(ctx, "rm -rf", {})["code"], 2)
+        self.assertIn("ticket", actions.run(ctx, "jira.release_plan", {"ticket": "x; ls"}, which=lambda _: "/bin/jira-cli")["output"])
+        self.assertIn("introuvable", actions.run(ctx, "jira.release_plan", {"ticket": "AB-1"}, which=lambda _: None)["output"])
+
+    def test_jira_argv_is_dry_run_only(self):
+        from phoenix_cli.lib import actions
+        argv = actions.build_argv(make_ctx(), "jira.deploy_plan", {"ticket": "AB-12", "env": "preprod"}, which=lambda _: "/bin/jira-cli")
+        self.assertEqual(argv, ["/bin/jira-cli", "deploy", "AB-12", "--dry-run", "--env", "preprod"])
+
+    def test_phoenix_action_runs_for_real(self):
+        from phoenix_cli.lib import actions
+        ctx = make_ctx()
+        ctx.cfg["layout"]["tools"] = str(Path(__file__).resolve().parents[2])
+        res = actions.run(ctx, "usage.audit", {})
+        self.assertTrue(res["ok"], res)
+
+    def test_server_rejects_missing_header_and_bad_host(self):
+        ctx = make_ctx()
+        server = dashserver.make_server(ctx, 0)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        try:
+            req = urllib.request.Request(base + "/api/run", data=b"{}", method="POST")
+            with self.assertRaises(urllib.error.HTTPError) as c:
+                urllib.request.urlopen(req)
+            self.assertEqual(c.exception.code, 403)
+            req = urllib.request.Request(base + "/api/state", headers={"Host": "evil.example"})
+            with self.assertRaises(urllib.error.HTTPError):
+                urllib.request.urlopen(req)
+            req = urllib.request.Request(base + "/api/run", data=json.dumps({"action": "x"}).encode(), method="POST", headers={"X-Phoenix": "1"})
+            self.assertFalse(json.load(urllib.request.urlopen(req))["ok"])
+        finally:
+            server.shutdown()
+            server.server_close()
+
+
+class SuggestTest(unittest.TestCase):
+    def base(self):
+        from phoenix_cli.lib import dashstate
+        return dashstate.build_state(make_ctx())
+
+    def test_suggestions_ordered_and_actionable(self):
+        ctx = make_ctx()
+        make_repo(ctx.layout("repos"), "alpha", {"README.md": "# A\n\nUn service."})
+        from phoenix_cli.lib import dashstate
+        titles = [s["title"] for s in dashstate.build_state(ctx)["suggestions"]]
+        self.assertIn("Créer les fiches wiki manquantes", titles)
+        self.assertIn("Régénérer les graphes", titles)
+        self.assertLess(titles.index("Régénérer les graphes"), titles.index("Miner l'historique Gemini"))
+
+    def test_card_command_generates_from_readme(self):
+        ctx = make_ctx()
+        make_repo(ctx.layout("repos"), "Alpha", {"README.md": "# A\n\nUn service de facturation.\n", "src/x.py": ""})
+        cli.main(["card"], ctx)
+        card = (ctx.layout("wiki") / "repos" / "alpha.md").read_text()
+        self.assertIn("Un service de facturation.", card)
+        self.assertIn("Dossiers: src", card)

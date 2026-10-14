@@ -1,10 +1,11 @@
 """État du dashboard: une seule structure JSON agrégeant tokens, repos, graphes, liens, obsolescence."""
+import shutil
 import time
 from datetime import datetime, timezone
 
 from ..commands import fr, tokens, usage
 from ..core import jsonl
-from . import gitrun, graphast, network, select
+from . import gitrun, graphast, network, select, suggest
 
 DOCS = ("README.md", "ARCHITECTURE.md", "GRAPH.md")
 
@@ -21,7 +22,9 @@ def build_state(ctx, now=None):
         st["card"] = select.find_card(wiki / "repos", path.name) is not None
         repos.append(st)
     events = jsonl.read(ctx.state / "usage.jsonl")
-    return {
+    inbox = [p for p in ctx.layout("inbox").glob("*") if p.name != ".gitkeep"]
+    last = max((e["ts"] for e in events if e.get("kind") == "cmd" and e.get("name") == "retex"), default="")
+    state = {
         "generated_at": datetime.fromtimestamp(now, timezone.utc).isoformat(),
         "tokens": tokens.summary(ctx, datetime.fromtimestamp(now, timezone.utc)),
         "repos": repos,
@@ -29,4 +32,11 @@ def build_state(ctx, now=None):
         "obsolete": [r for r in usage.candidates(ctx, now) if r["verdict"] != "keep"],
         "feature_requests": len(fr.open_requests(ctx)),
         "recent": events[-15:][::-1],
+        "inbox": len(inbox),
+        "has_mining": (wiki / "insights" / "gemini-mining.md").is_file(),
+        "datahub_configured": bool(ctx.cfg["datahub"]["url"]),
+        "jira_available": shutil.which("jira-cli") is not None,
+        "commands_since_retex": sum(1 for e in events if e.get("kind") == "cmd" and e["ts"] > last),
     }
+    state["suggestions"] = suggest.suggest(state)
+    return state

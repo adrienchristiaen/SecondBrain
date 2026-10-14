@@ -16,6 +16,11 @@ svg text{fill:var(--fg);font-size:11px}
 </style></head><body>
 <header><h1>Second Brain</h1><span id="ts" class="mut"></span><button id="sync">Sync Git</button></header>
 <main>
+<section style="grid-column:1/-1"><h2>Suggestions</h2><div id="sug"></div></section>
+<section><h2>Actions</h2><div id="acts"></div><p><input id="prompt" placeholder="prompt pour le pack de contexte" style="width:70%"> <button data-a="context.preview" data-p="prompt">Pack</button></p>
+<p><input id="ticket" placeholder="PROJ-123" size="12"> <input id="env" placeholder="env" size="8">
+<button data-a="jira.release_plan">Plan release</button> <button data-a="jira.deploy_plan">Plan deploy</button></p>
+<p class="mut">Jira/GitLab: plans en lecture seule; les actions réelles restent dans jira-cli.</p><pre id="out" style="white-space:pre-wrap;max-height:260px;overflow:auto"></pre></section>
 <section><h2>Budget tokens</h2><div id="tok"></div></section>
 <section><h2>Réseau des repos</h2><svg id="net" viewBox="0 0 400 300" width="100%"></svg></section>
 <section style="grid-column:1/-1"><h2>Repos, Graphify et docs</h2><table id="repos"></table></section>
@@ -24,8 +29,14 @@ svg text{fill:var(--fg);font-size:11px}
 </main>
 <script>
 const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const H={'X-Phoenix':'1','Content-Type':'application/json'};
+async function act(name,params){$('out').textContent='… '+name;
+  const r=await (await fetch('/api/run',{method:'POST',headers:H,body:JSON.stringify({action:name,params})})).json();
+  $('out').textContent=(r.ok?'':'ÉCHEC ')+r.output;load()}
 async function load(){
   let s; try{s=await (await fetch('/api/state')).json()}catch(e){s=await (await fetch('state.json')).json(); $('sync').disabled=true}
+  $('sug').innerHTML=s.suggestions.map(g=>`<div><b>${esc(g.title)}</b> <span class="mut">${esc(g.why)}</span> ${g.action?`<button data-a="${g.action}">Lancer</button>`:''}</div>`).join('')||'<span class="ok">Rien à proposer</span>';
+  if(!$('acts').children.length)$('acts').innerHTML=['repos.sync','graph.build','cards.build','usage.audit','retex.run'].map(a=>`<button data-a="${a}">${a}</button> `).join('');
   const t=s.tokens, pct=Math.min(100,100*t.spent_usd/t.budget_usd);
   $('ts').textContent=s.generated_at.slice(0,19).replace('T',' ');
   $('tok').innerHTML=`<div class="bar"><i style="width:${pct}%;background:${t.over_budget?'var(--bad)':'var(--ok)'}"></i></div>
@@ -41,6 +52,8 @@ async function load(){
   $('net').innerHTML=s.edges.filter(e=>pos[e.from]&&pos[e.to]).map(e=>`<line x1="${pos[e.from][0]}" y1="${pos[e.from][1]}" x2="${pos[e.to][0]}" y2="${pos[e.to][1]}" stroke="#6ea8fe" stroke-opacity=".6" stroke-width="${Math.min(4,1+e.weight/3)}"/>`).join('')+
    s.repos.map(r=>`<g><circle cx="${pos[r.name][0]}" cy="${pos[r.name][1]}" r="7" fill="${r.dirty?'#f5a524':r.graph.stale?'#f0616d':'#3ecf8e'}"/><text x="${pos[r.name][0]+10}" y="${pos[r.name][1]+4}">${esc(r.name)}</text></g>`).join('');
 }
-$('sync').onclick=async()=>{$('sync').textContent='Sync…';await fetch('/api/sync',{method:'POST'});$('sync').textContent='Sync Git';load()};
+$('sync').onclick=async()=>{$('sync').textContent='Sync…';await fetch('/api/sync',{method:'POST',headers:H});$('sync').textContent='Sync Git';load()};
+document.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;
+  act(a,{prompt:$('prompt').value,ticket:$('ticket').value.trim(),env:$('env').value.trim()})});
 load();setInterval(load,5000);
 </script></body></html>
