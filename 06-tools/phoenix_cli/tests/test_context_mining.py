@@ -14,6 +14,16 @@ class SelectTest(unittest.TestCase):
         self.assertEqual(select.lexical("corriger la TVA de billing", docs, 3), ["billing-api"])
         self.assertEqual(select.lexical("zzz", docs, 3), [])
 
+    def test_lexical_ignores_words_present_everywhere_and_weak_matches(self):
+        docs = {"blinders": "audit skills gemini cli", "jira": "cli tickets", "news": "cli podcast"}
+        self.assertEqual(select.lexical("audit des skills cli", docs, 3), ["blinders"])
+
+    def test_find_card_is_case_insensitive(self):
+        folder = Path(tempfile.mkdtemp())
+        (folder / "jira-cli.md").write_text("x")
+        self.assertEqual(select.find_card(folder, "Jira-CLI").name, "jira-cli.md")
+        self.assertIsNone(select.find_card(folder, "other"))
+
     def test_blinders_absent_returns_none(self):
         self.assertIsNone(select.via_blinders("x", ["a"], which=lambda _: None))
 

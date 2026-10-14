@@ -11,13 +11,29 @@ def words(text):
 
 
 def lexical(prompt, docs, limit):
-    """docs: {nom: texte}. Un mot dans le nom pèse 5, dans le texte 1."""
-    query, scored = words(prompt), []
-    for name, text in docs.items():
-        score = 5 * len(query & words(name)) + len(query & words(text))
+    """docs: {nom: texte}. Mot du nom: 5; mot du texte: 1/df (un mot présent partout ne prouve rien).
+    Seuls les repos à au moins 40 % du meilleur score sont gardés."""
+    query = words(prompt)
+    doc_words = {name: words(text) for name, text in docs.items()}
+    scored = []
+    for name, found in doc_words.items():
+        score = 5 * len(query & words(name))
+        for w in query & found:
+            df = sum(w in other for other in doc_words.values())
+            score += 0 if df == len(docs) > 1 else 1 / df
         if score:
             scored.append((-score, name))
-    return [name for _, name in sorted(scored)[:limit]]
+    scored.sort()
+    return [n for s, n in scored[:limit] if -s >= 0.4 * -scored[0][0]]
+
+
+def find_card(folder, name):
+    """Fiche wiki d'un repo, insensible à la casse; None si absente."""
+    if folder.is_dir():
+        for path in folder.glob("*.md"):
+            if path.stem.lower() == name.lower():
+                return path
+    return None
 
 
 def via_blinders(prompt, names, runner=subprocess.run, which=shutil.which):

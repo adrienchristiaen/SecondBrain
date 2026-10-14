@@ -33,7 +33,7 @@ def _read(path, limit=None):
 def run(args, ctx):
     repos = {p.name: p for p in gitrun.discover(ctx.layout("repos"))}
     wiki = ctx.layout("wiki")
-    cards = {n: _read(wiki / "repos" / f"{n}.md") for n in repos}
+    cards = {n: _read(select.find_card(wiki / "repos", n) or wiki / "none") for n in repos}
     limit = ctx.cfg["context"]["max_repos"]
     chosen = [n for n in args.repos.split(",") if n in repos]
     if not chosen:

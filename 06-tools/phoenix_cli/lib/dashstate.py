@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from ..commands import fr, tokens, usage
 from ..core import jsonl
-from . import gitrun, graphast, network
+from . import gitrun, graphast, network, select
 
 DOCS = ("README.md", "ARCHITECTURE.md", "GRAPH.md")
 
@@ -18,7 +18,7 @@ def build_state(ctx, now=None):
         st = gitrun.status(path, ctx.cfg["git"]["branches"])
         st["graph"] = graphast.freshness(path, wiki / "graphs" / f"{path.name}.md", st["last_commit"], now)
         st["docs"] = [d for d in DOCS if (path / d).is_file()]
-        st["card"] = (wiki / "repos" / f"{path.name}.md").is_file()
+        st["card"] = select.find_card(wiki / "repos", path.name) is not None
         repos.append(st)
     events = jsonl.read(ctx.state / "usage.jsonl")
     return {
