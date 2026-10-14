@@ -1,4 +1,4 @@
-# Configuration du Second Brain. Tout est optionnel: les défauts vivent dans phoenix_cli/core/config.py.
+# Configuration du Second Brain. Tout est optionnel: les défauts vivent dans iris_cli/core/config.py.
 [budget]
 usd = 200.0
 period = "year"

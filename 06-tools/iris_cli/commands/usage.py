@@ -32,5 +32,5 @@ def run(args, ctx):
     todo = [r for r in rows if r["verdict"] != "keep"]
     for r in todo:
         print(f"{r['verdict']:8} {r['kind']:6} {r['name']} (usages={r['uses']}, inactif={r['idle_days']}j, âge={r['age_days']}j)")
-    print(f"{len(todo)} candidat(s) sur {len(rows)} actifs. Archiver avec: phoenix archive <chemin>")
+    print(f"{len(todo)} candidat(s) sur {len(rows)} actifs. Archiver avec: iris archive <chemin>")
     return 0

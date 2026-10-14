@@ -29,7 +29,7 @@ svg text{fill:var(--fg);font-size:11px}
 </main>
 <script>
 const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-const H={'X-Phoenix':'1','Content-Type':'application/json'};
+const H={'X-Iris':'1','Content-Type':'application/json'};
 async function act(name,params){$('out').textContent='… '+name;
   const r=await (await fetch('/api/run',{method:'POST',headers:H,body:JSON.stringify({action:name,params})})).json();
   $('out').textContent=(r.ok?'':'ÉCHEC ')+r.output;load()}

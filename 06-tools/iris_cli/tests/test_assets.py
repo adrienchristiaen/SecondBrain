@@ -1,7 +1,7 @@
 import time
 import unittest
 
-from phoenix_cli.lib import assets
+from iris_cli.lib import assets
 
 DAY = 86400
 NOW = time.time()

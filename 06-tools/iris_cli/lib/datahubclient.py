@@ -1,4 +1,4 @@
-"""Client Data Hub minimal: lineage, santé, versions. Les endpoints sont configurables (phoenix.toml)."""
+"""Client Data Hub minimal: lineage, santé, versions. Les endpoints sont configurables (iris.toml)."""
 import json
 import os
 import urllib.request
@@ -7,7 +7,7 @@ import urllib.request
 def fetch(cfg, name, aspect, opener=urllib.request.urlopen):
     hub = cfg["datahub"]
     if not hub["url"]:
-        return {"status": "unconfigured", "hint": "renseigner [datahub] url dans phoenix.toml"}
+        return {"status": "unconfigured", "hint": "renseigner [datahub] url dans iris.toml"}
     url = hub["url"].rstrip("/") + hub["endpoints"][aspect].format(name=name)
     req = urllib.request.Request(url, headers={"Accept": "application/json"})
     token = os.environ.get(hub["token_env"], "")

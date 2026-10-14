@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from phoenix_cli.lib import gitrun
+from iris_cli.lib import gitrun
 from .helpers import make_repo, sh
 
 

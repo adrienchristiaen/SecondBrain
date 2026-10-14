@@ -7,7 +7,7 @@ TEMPLATE = "# {title}\n\n- Date: {day}\n- Statut: open\n\n## Besoin\n\n## Pourqu
 
 
 def register(sub):
-    p = sub.add_parser(NAME, help="feature requests Phoenix CLI (06-tools/feature_request)")
+    p = sub.add_parser(NAME, help="feature requests Iris CLI (06-tools/feature_request)")
     s = p.add_subparsers(dest="sub", required=True)
     n = s.add_parser("new")
     n.add_argument("title")

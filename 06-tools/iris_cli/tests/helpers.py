@@ -2,13 +2,13 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from phoenix_cli.core import config
-from phoenix_cli.core.context import Ctx
+from iris_cli.core import config
+from iris_cli.core.context import Ctx
 
 
 def make_ctx(extra_toml=""):
     root = Path(tempfile.mkdtemp())
-    (root / "phoenix.toml").write_text(extra_toml, encoding="utf-8")
+    (root / "iris.toml").write_text(extra_toml, encoding="utf-8")
     for d in config.DEFAULTS["layout"].values():
         (root / d).mkdir(parents=True, exist_ok=True)
     return Ctx(root, config.load(root))

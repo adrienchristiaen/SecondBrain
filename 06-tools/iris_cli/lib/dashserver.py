@@ -1,5 +1,5 @@
 """Serveur local léger (stdlib), lié à 127.0.0.1: page statique, /api/state, POST /api/sync et POST /api/run (liste blanche).
-Les POST exigent l'en-tête X-Phoenix et un Host local (protection contre les requêtes d'autres sites et le DNS rebinding)."""
+Les POST exigent l'en-tête X-Iris et un Host local (protection contre les requêtes d'autres sites et le DNS rebinding)."""
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -36,7 +36,7 @@ def make_server(ctx, port):
                 self._send("{}", code=404)
 
         def do_POST(self):
-            if not self._local() or self.headers.get("X-Phoenix") != "1":
+            if not self._local() or self.headers.get("X-Iris") != "1":
                 return self._send("{}", code=403)
             if self.path == "/api/sync":
                 self._send(json.dumps([gitrun.sync(p, ctx.cfg["git"]["branches"]) for p in gitrun.discover(ctx.layout("repos"))]))

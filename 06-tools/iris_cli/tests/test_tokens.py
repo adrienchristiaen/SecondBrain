@@ -1,9 +1,9 @@
 import unittest
 from datetime import datetime, timezone
 
-from phoenix_cli import cli
-from phoenix_cli.commands import tokens
-from phoenix_cli.lib import tokenmath
+from iris_cli import cli
+from iris_cli.commands import tokens
+from iris_cli.lib import tokenmath
 from .helpers import make_ctx
 
 PRICES = {"pro": {"in": 1.0, "out": 10.0}}

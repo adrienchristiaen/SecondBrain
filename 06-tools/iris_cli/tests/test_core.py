@@ -2,13 +2,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from phoenix_cli.core import config, jsonl, paths
+from iris_cli.core import config, jsonl, paths
 
 
 class CoreTest(unittest.TestCase):
     def test_find_root_walks_up(self):
         root = Path(tempfile.mkdtemp()).resolve()
-        (root / "phoenix.toml").write_text("")
+        (root / "iris.toml").write_text("")
         deep = root / "a" / "b"
         deep.mkdir(parents=True)
         self.assertEqual(paths.find_root(deep, env={}), root)
@@ -16,13 +16,13 @@ class CoreTest(unittest.TestCase):
     def test_find_root_env_wins_and_validates(self):
         root = Path(tempfile.mkdtemp()).resolve()
         with self.assertRaises(paths.RootNotFound):
-            paths.find_root(env={"PHOENIX_ROOT": str(root)})
-        (root / "phoenix.toml").write_text("")
-        self.assertEqual(paths.find_root(env={"PHOENIX_ROOT": str(root)}), root)
+            paths.find_root(env={"IRIS_ROOT": str(root)})
+        (root / "iris.toml").write_text("")
+        self.assertEqual(paths.find_root(env={"IRIS_ROOT": str(root)}), root)
 
     def test_config_deep_merge(self):
         root = Path(tempfile.mkdtemp())
-        (root / "phoenix.toml").write_text('[budget]\nusd = 50\n')
+        (root / "iris.toml").write_text('[budget]\nusd = 50\n')
         cfg = config.load(root)
         self.assertEqual(cfg["budget"], {"usd": 50, "period": "year"})
         self.assertEqual(cfg["layout"]["wiki"], "03-wiki")

@@ -1,9 +1,9 @@
 # Carte du code
 
 ```
-phoenix                      lanceur (fixe PHOENIX_ROOT, path)
-phoenix.toml                 configuration (budget, prix, Data Hub)
-06-tools/phoenix_cli/
+iris                      lanceur (fixe IRIS_ROOT, path)
+iris.toml                 configuration (budget, prix, Data Hub)
+06-tools/iris_cli/
   cli.py registry.py         dispatch + découverte des commandes
   core/                      paths, config, context, jsonl
   commands/                  une commande par fichier (NAME + register)
@@ -13,4 +13,4 @@ phoenix.toml                 configuration (budget, prix, Data Hub)
   tests/                     unittest (stdlib)
 ```
 Dépendances: `commands/* → lib/* → core/*`; `lib/dashstate → commands/{tokens,usage,fr}` (agrégation).
-Régénérer les graphes des repos suivis: `./phoenix graph`.
+Régénérer les graphes des repos suivis: `./iris graph`.

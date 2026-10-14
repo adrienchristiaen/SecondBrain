@@ -8,9 +8,9 @@ import urllib.request
 from contextlib import redirect_stdout
 from pathlib import Path
 
-from phoenix_cli import cli
-from phoenix_cli.commands import fr
-from phoenix_cli.lib import dashserver, datahubclient
+from iris_cli import cli
+from iris_cli.commands import fr
+from iris_cli.lib import dashserver, datahubclient
 from .helpers import make_ctx, make_repo
 
 
@@ -82,7 +82,7 @@ class DashboardTest(unittest.TestCase):
             self.assertEqual(state["edges"][0]["to"], "beta-service")
             self.assertIn("remaining_usd", state["tokens"])
             self.assertIn("Second Brain", urllib.request.urlopen(base + "/").read().decode())
-            sync = json.load(urllib.request.urlopen(urllib.request.Request(base + "/api/sync", method="POST", headers={"X-Phoenix": "1"})))
+            sync = json.load(urllib.request.urlopen(urllib.request.Request(base + "/api/sync", method="POST", headers={"X-Iris": "1"})))
             self.assertEqual(len(sync), 2)
         finally:
             server.shutdown()
@@ -102,19 +102,19 @@ class DashboardTest(unittest.TestCase):
 
 class ActionsTest(unittest.TestCase):
     def test_validation_and_whitelist(self):
-        from phoenix_cli.lib import actions
+        from iris_cli.lib import actions
         ctx = make_ctx()
         self.assertEqual(actions.run(ctx, "rm -rf", {})["code"], 2)
         self.assertIn("ticket", actions.run(ctx, "jira.release_plan", {"ticket": "x; ls"}, which=lambda _: "/bin/jira-cli")["output"])
         self.assertIn("introuvable", actions.run(ctx, "jira.release_plan", {"ticket": "AB-1"}, which=lambda _: None)["output"])
 
     def test_jira_argv_is_dry_run_only(self):
-        from phoenix_cli.lib import actions
+        from iris_cli.lib import actions
         argv = actions.build_argv(make_ctx(), "jira.deploy_plan", {"ticket": "AB-12", "env": "preprod"}, which=lambda _: "/bin/jira-cli")
         self.assertEqual(argv, ["/bin/jira-cli", "deploy", "AB-12", "--dry-run", "--env", "preprod"])
 
-    def test_phoenix_action_runs_for_real(self):
-        from phoenix_cli.lib import actions
+    def test_iris_action_runs_for_real(self):
+        from iris_cli.lib import actions
         ctx = make_ctx()
         ctx.cfg["layout"]["tools"] = str(Path(__file__).resolve().parents[2])
         res = actions.run(ctx, "usage.audit", {})
@@ -133,7 +133,7 @@ class ActionsTest(unittest.TestCase):
             req = urllib.request.Request(base + "/api/state", headers={"Host": "evil.example"})
             with self.assertRaises(urllib.error.HTTPError):
                 urllib.request.urlopen(req)
-            req = urllib.request.Request(base + "/api/run", data=json.dumps({"action": "x"}).encode(), method="POST", headers={"X-Phoenix": "1"})
+            req = urllib.request.Request(base + "/api/run", data=json.dumps({"action": "x"}).encode(), method="POST", headers={"X-Iris": "1"})
             self.assertFalse(json.load(urllib.request.urlopen(req))["ok"])
         finally:
             server.shutdown()
@@ -142,13 +142,13 @@ class ActionsTest(unittest.TestCase):
 
 class SuggestTest(unittest.TestCase):
     def base(self):
-        from phoenix_cli.lib import dashstate
+        from iris_cli.lib import dashstate
         return dashstate.build_state(make_ctx())
 
     def test_suggestions_ordered_and_actionable(self):
         ctx = make_ctx()
         make_repo(ctx.layout("repos"), "alpha", {"README.md": "# A\n\nUn service."})
-        from phoenix_cli.lib import dashstate
+        from iris_cli.lib import dashstate
         titles = [s["title"] for s in dashstate.build_state(ctx)["suggestions"]]
         self.assertIn("Créer les fiches wiki manquantes", titles)
         self.assertIn("Régénérer les graphes", titles)

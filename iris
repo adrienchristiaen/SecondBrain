@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+"""Lanceur: place 06-tools sur le path et fixe IRIS_ROOT à ce dossier (aucun chemin en dur)."""
+import os
+import sys
+from pathlib import Path
+
+root = Path(__file__).resolve().parent
+os.environ.setdefault("IRIS_ROOT", str(root))
+sys.path.insert(0, str(root / "06-tools"))
+
+from iris_cli.cli import main  # noqa: E402
+
+sys.exit(main())

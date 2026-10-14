@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from phoenix_cli.lib import graphast, network
+from iris_cli.lib import graphast, network
 from .helpers import make_repo
 
 SRC = {

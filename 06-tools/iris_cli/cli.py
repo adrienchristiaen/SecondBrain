@@ -10,7 +10,7 @@ from .core.context import load_ctx
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(prog="phoenix", description="Phoenix CLI: outils déterministes du Second Brain")
+    parser = argparse.ArgumentParser(prog="iris", description="Iris CLI: outils déterministes du Second Brain")
     sub = parser.add_subparsers(dest="cmd_name")
     for mod in registry.load():
         mod.register(sub)
@@ -26,10 +26,10 @@ def main(argv=None, ctx=None):
     try:
         ctx = ctx or load_ctx()
         rc = args.run(args, ctx) or 0
-    except Exception as exc:  # message court; PHOENIX_DEBUG=1 pour la trace
-        if os.environ.get("PHOENIX_DEBUG"):
+    except Exception as exc:  # message court; IRIS_DEBUG=1 pour la trace
+        if os.environ.get("IRIS_DEBUG"):
             raise
-        print(f"phoenix: {exc}", file=sys.stderr)
+        print(f"iris: {exc}", file=sys.stderr)
         return 1
     if args.cmd_name != "usage":
         event = {"ts": datetime.now(timezone.utc).isoformat(), "kind": "cmd", "name": args.cmd_name,

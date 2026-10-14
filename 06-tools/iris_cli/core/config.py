@@ -1,4 +1,4 @@
-"""Configuration: valeurs par défaut fusionnées avec phoenix.toml (tomllib, stdlib)."""
+"""Configuration: valeurs par défaut fusionnées avec iris.toml (tomllib, stdlib)."""
 import tomllib
 from copy import deepcopy
 
@@ -35,6 +35,6 @@ def merge(base, extra):
 
 
 def load(root):
-    path = root / "phoenix.toml"
+    path = root / "iris.toml"
     data = tomllib.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
     return merge(DEFAULTS, data)

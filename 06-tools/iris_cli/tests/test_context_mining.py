@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from phoenix_cli import cli
-from phoenix_cli.lib import miningparse, select
+from iris_cli import cli
+from iris_cli.lib import miningparse, select
 from .helpers import make_ctx, make_repo
 
 

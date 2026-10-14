@@ -2,6 +2,6 @@
 # Read-only commands that never need validation. Never whitelist glab (use gitlab_cli).
 [[rule]]
 toolName = "run_shell_command"
-commandPrefix = ["git status", "git log", "git diff", "./phoenix tokens report", "./phoenix usage audit", "./phoenix repos status", "./phoenix context", "./phoenix fr list"]
+commandPrefix = ["git status", "git log", "git diff", "./iris tokens report", "./iris usage audit", "./iris repos status", "./iris context", "./iris fr list"]
 decision = "allow"
 priority = 100

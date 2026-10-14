@@ -1,19 +1,19 @@
 # Second Brain
 
-Cerveau de développement *local-first*: Markdown plat (lisible par humains et LLM) + moteur déterministe **Phoenix CLI** (Python stdlib, zéro dépendance) pour ne dépenser des tokens distants que sur la réflexion complexe.
+Cerveau de développement *local-first*: Markdown plat (lisible par humains et LLM) + moteur déterministe **Iris CLI** (Python stdlib, zéro dépendance) pour ne dépenser des tokens distants que sur la réflexion complexe.
 
 ## Démarrage
 
 ```bash
-./phoenix repos clone https://github.com/adrienchristiaen/blinders   # clone dans 05-repos (git-ignoré)
-./phoenix repos sync          # fast-forward de main/master/develop de chaque repo
-./phoenix graph               # graphes AST -> 03-wiki/graphs/
-./phoenix context "ton prompt" # pack minimal (fiches + graphes) à donner au modèle distant
-./phoenix dashboard serve --sync   # http://127.0.0.1:8765
+./iris repos clone https://github.com/adrienchristiaen/blinders   # clone dans 05-repos (git-ignoré)
+./iris repos sync          # fast-forward de main/master/develop de chaque repo
+./iris graph               # graphes AST -> 03-wiki/graphs/
+./iris context "ton prompt" # pack minimal (fiches + graphes) à donner au modèle distant
+./iris dashboard serve --sync   # http://127.0.0.1:8765
 make test
 ```
 
-Python ≥ 3.11. La racine est trouvée par `phoenix.toml` (remontée depuis le cwd) ou `PHOENIX_ROOT`: aucun chemin en dur.
+Python ≥ 3.11. La racine est trouvée par `iris.toml` (remontée depuis le cwd) ou `IRIS_ROOT`: aucun chemin en dur.
 
 ## Arborescence
 
@@ -24,7 +24,7 @@ Python ≥ 3.11. La racine est trouvée par `phoenix.toml` (remontée depuis le 
 | `03-wiki/` | connaissance structurée (fiches repos, graphes, insights, décisions) |
 | `04-workspaces/` | dossiers temporaires par sujet |
 | `05-repos/` | repos clonés (git-ignoré) |
-| `06-tools/` | `phoenix_cli/`, `feature_request/` (+ Blinders, Graphify, Data Hub via Phoenix) |
+| `06-tools/` | `iris_cli/`, `feature_request/` (+ Blinders, Graphify, Data Hub via Iris) |
 | `07-archive/` | dump tel quel daté de ce qui est intégré au wiki |
 | `.gemini/skills/` | skills (`session-retex`, `executing-2nd-brain-processes`) |
 
