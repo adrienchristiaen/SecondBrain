@@ -1,6 +1,6 @@
 from datetime import date
 
-from ..lib import gitrun, graphast
+from ..lib import graphast, workspace
 
 NAME = "graph"
 
@@ -12,7 +12,7 @@ def register(sub):
 
 
 def run(args, ctx):
-    repos = gitrun.discover(ctx.layout("repos"))
+    repos = workspace.repos(ctx)
     chosen = [r for r in repos if not args.repos or r.name in args.repos]
     out = ctx.layout("wiki") / "graphs"
     out.mkdir(parents=True, exist_ok=True)

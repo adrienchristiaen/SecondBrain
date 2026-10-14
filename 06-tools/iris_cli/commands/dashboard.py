@@ -1,7 +1,9 @@
 import json
 import shutil
+import threading
+import time
 
-from ..lib import dashserver, dashstate, gitrun
+from ..lib import dashserver, dashstate, gitrun, ingest, workspace
 
 NAME = "dashboard"
 
@@ -16,6 +18,15 @@ def register(sub):
     p.set_defaults(run=run, cmd_name=NAME)
 
 
+def _ingest_loop(ctx, every=30):
+    while True:
+        try:
+            ingest.ingest(ctx)
+        except Exception:  # un journal illisible ne doit pas arrêter le dashboard
+            pass
+        time.sleep(every)
+
+
 def run(args, ctx):
     if args.sub == "build":
         out = ctx.state / "dashboard"
@@ -25,8 +36,9 @@ def run(args, ctx):
         print(f"écrit {out.relative_to(ctx.root)}/")
         return 0
     if args.sync:
-        for path in gitrun.discover(ctx.layout("repos")):
+        for path in workspace.repos(ctx):
             print(gitrun.sync(path, ctx.cfg["git"]["branches"]))
+    threading.Thread(target=_ingest_loop, args=(ctx,), daemon=True).start()
     server = dashserver.make_server(ctx, args.port or ctx.cfg["dashboard"]["port"])
     print(f"dashboard sur http://127.0.0.1:{server.server_address[1]}  (Ctrl+C pour arrêter)")
     try:

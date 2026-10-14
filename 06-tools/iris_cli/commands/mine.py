@@ -1,7 +1,7 @@
 import shutil
 from datetime import date
 
-from ..lib import assets, gitrun, miningparse
+from ..lib import assets, miningparse, workspace
 
 NAME = "mine"
 
@@ -15,7 +15,7 @@ def register(sub):
 
 def run(args, ctx):
     prompts = miningparse.load_prompts(args.export_dir)
-    repo_names = [p.name for p in gitrun.discover(ctx.layout("repos"))]
+    repo_names = [p.name for p in workspace.repos(ctx)]
     asset_names = [i["name"] for i in assets.inventory(ctx) if i["kind"] in ("skill", "mcp")]
     result = miningparse.analyze(prompts, repo_names, asset_names)
     out = ctx.layout("wiki") / "insights" / "gemini-mining.md"

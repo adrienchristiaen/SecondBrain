@@ -163,3 +163,4 @@ class SuggestTest(unittest.TestCase):
         card = (ctx.layout("wiki") / "repos" / "alpha.md").read_text()
         self.assertIn("Un service de facturation.", card)
         self.assertIn("Dossiers: src", card)
+

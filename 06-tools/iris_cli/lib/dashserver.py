@@ -3,8 +3,9 @@ Les POST exigent l'en-tÃªte X-Iris et un Host local (protection contre les requÃ
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
-from . import actions, dashstate, gitrun
+from . import actions, dashstate, gitrun, repodetail, workspace
 
 PAGE = Path(__file__).resolve().parent.parent / "web" / "index.html"
 LOCAL_HOSTS = ("127.0.0.1", "localhost")
@@ -26,7 +27,11 @@ def make_server(ctx, port):
         def do_GET(self):
             if not self._local():
                 return self._send("{}", code=403)
-            if self.path == "/api/state":
+            url = urlparse(self.path)
+            if url.path == "/api/repo":
+                found = repodetail.detail(ctx, parse_qs(url.query).get("name", [""])[0])
+                self._send(json.dumps(found), code=200 if found else 404)
+            elif self.path == "/api/state":
                 self._send(json.dumps(dashstate.build_state(ctx)))
             elif self.path == "/api/actions":
                 self._send(json.dumps(actions.catalog()))
@@ -39,7 +44,7 @@ def make_server(ctx, port):
             if not self._local() or self.headers.get("X-Iris") != "1":
                 return self._send("{}", code=403)
             if self.path == "/api/sync":
-                self._send(json.dumps([gitrun.sync(p, ctx.cfg["git"]["branches"]) for p in gitrun.discover(ctx.layout("repos"))]))
+                self._send(json.dumps([gitrun.sync(p, ctx.cfg["git"]["branches"]) for p in workspace.repos(ctx)]))
             elif self.path == "/api/run":
                 try:
                     body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")

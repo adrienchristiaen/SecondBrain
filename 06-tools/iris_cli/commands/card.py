@@ -1,4 +1,4 @@
-from ..lib import cardgen, gitrun, select
+from ..lib import cardgen, select, workspace
 
 NAME = "card"
 
@@ -11,7 +11,7 @@ def register(sub):
 def run(args, ctx):
     folder = ctx.layout("wiki") / "repos"
     folder.mkdir(parents=True, exist_ok=True)
-    for repo in gitrun.discover(ctx.layout("repos")):
+    for repo in workspace.repos(ctx):
         if select.find_card(folder, repo.name):
             continue
         (folder / f"{repo.name.lower()}.md").write_text(cardgen.make_card(repo), encoding="utf-8")

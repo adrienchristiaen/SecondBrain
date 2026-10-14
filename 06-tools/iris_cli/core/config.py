@@ -21,6 +21,8 @@ DEFAULTS = {
         },
     },
     "dashboard": {"port": 8765},
+    "repos": {"roots": []},
+    "llm": {"url": "http://127.0.0.1:11434", "model": "", "timeout": 300},
 }
 
 

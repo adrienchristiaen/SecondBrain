@@ -1,4 +1,4 @@
-from ..lib import gitrun
+from ..lib import gitrun, workspace
 
 NAME = "repos"
 
@@ -20,7 +20,7 @@ def run(args, ctx):
         print(f"{res['name']}: {'ok' if res['ok'] else 'échec'} {res['detail']}")
         return 0 if res["ok"] else 1
     failed = 0
-    for path in gitrun.discover(folder):
+    for path in workspace.repos(ctx):
         if args.sub == "sync":
             r = gitrun.sync(path, branches)
             failed += not r["ok"]

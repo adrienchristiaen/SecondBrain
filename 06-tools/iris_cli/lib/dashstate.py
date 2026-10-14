@@ -5,14 +5,14 @@ from datetime import datetime, timezone
 
 from ..commands import fr, tokens, usage
 from ..core import jsonl
-from . import gitrun, graphast, network, select, suggest
+from . import gitrun, graphast, network, select, suggest, workspace
 
 DOCS = ("README.md", "ARCHITECTURE.md", "GRAPH.md")
 
 
 def build_state(ctx, now=None):
     now = now or time.time()
-    paths = gitrun.discover(ctx.layout("repos"))
+    paths = workspace.repos(ctx)
     wiki = ctx.layout("wiki")
     repos = []
     for path in paths:
@@ -36,6 +36,9 @@ def build_state(ctx, now=None):
         "has_mining": (wiki / "insights" / "gemini-mining.md").is_file(),
         "datahub_configured": bool(ctx.cfg["datahub"]["url"]),
         "jira_available": shutil.which("jira-cli") is not None,
+        "roots": len(workspace.configured_roots(ctx)),
+        "llm_configured": bool(ctx.cfg["llm"]["model"]),
+        "has_ingested": any(k in ("claude", "gemini") for k in tokens.summary(ctx)["by_source"]),
         "commands_since_retex": sum(1 for e in events if e.get("kind") == "cmd" and e["ts"] > last),
     }
     state["suggestions"] = suggest.suggest(state)

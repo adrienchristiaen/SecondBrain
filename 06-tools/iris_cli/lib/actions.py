@@ -7,11 +7,12 @@ import subprocess
 import sys
 
 TICKET = re.compile(r"^[A-Z][A-Z0-9]+-\d+$")
+REPO = re.compile(r"^[\w.-]{1,80}$")
 ENV = re.compile(r"^[a-z0-9-]{2,20}$")
-IRIS = {"repos.sync": ["repos", "sync"], "graph.build": ["graph"], "usage.audit": ["usage", "audit"],
+IRIS = {"repos.sync": ["repos", "sync"], "graph.build": ["graph"], "tokens.ingest": ["ingest"], "usage.audit": ["usage", "audit"],
            "retex.run": ["retex"], "cards.build": ["card"]}
 LABELS = {"repos.sync": "Synchroniser les repos", "graph.build": "Régénérer les graphes", "usage.audit": "Auditer les actifs",
-          "retex.run": "Lancer le rétex", "cards.build": "Créer les fiches manquantes",
+          "retex.run": "Lancer le rétex", "tokens.ingest": "Importer les logs des CLI", "cards.build": "Créer les fiches manquantes",
           "context.preview": "Prévisualiser un pack de contexte", "jira.release_plan": "Plan de release (dry-run)",
           "jira.deploy_plan": "Plan de déploiement (dry-run)"}
 
@@ -21,6 +22,10 @@ def catalog():
 
 
 def build_argv(ctx, name, params, which=shutil.which):
+    if name == "graph.build" and params.get("repo"):
+        if not REPO.match(str(params["repo"])):
+            raise ValueError("nom de repo invalide")
+        return [sys.executable, "-m", "iris_cli", "graph", params["repo"]]
     if name in IRIS:
         return [sys.executable, "-m", "iris_cli", *IRIS[name]]
     if name == "context.preview":

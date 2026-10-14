@@ -8,6 +8,12 @@ def _s(title, why, action=None, prio=5):
 def suggest(state):
     out = []
     repos, tok = state["repos"], state["tokens"]
+    if not state["roots"] and not repos:
+        out.append(_s("Connecter ta racine de repos", "iris connect <dossier>: tes repos locaux sont lus sur place, sans clone", None, 0))
+    if not state["has_ingested"]:
+        out.append(_s("Importer l'usage de Gemini CLI et Claude Code", "lit les journaux locaux pour alimenter le budget de tokens", "tokens.ingest", 2))
+    if not state["llm_configured"]:
+        out.append(_s("Brancher un LLM local", "renseigner [llm] model dans iris.toml (Ollama) pour iris ask", None, 6))
     behind = [r["name"] for r in repos if r["behind"]]
     if behind:
         out.append(_s("Synchroniser les repos en retard", ", ".join(behind), "repos.sync", 1))

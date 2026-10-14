@@ -4,8 +4,18 @@ from collections import defaultdict
 from datetime import date
 
 
+def price_for(prices, model):
+    """Prix exact, sinon la clé la plus précise dont tous les mots figurent dans le nom du modèle
+    (gemini-pro couvre gemini-2.5-pro)."""
+    if model in prices:
+        return prices[model]
+    words = set(model.replace(".", "-").split("-"))
+    best = max((k for k in prices if set(k.split("-")) <= words), key=lambda k: len(k.split("-")), default=None)
+    return prices[best] if best else {}
+
+
 def cost(prices, model, tin, tout):
-    price = prices.get(model, {})
+    price = price_for(prices, model)
     return round((tin * price.get("in", 0.0) + tout * price.get("out", 0.0)) / 1e6, 6)
 
 
@@ -19,14 +29,15 @@ def summarize(entries, budget_usd, period, today):
     key = today.strftime("%Y-%m" if period == "month" else "%Y")
     rows = [e for e in entries if e.get("ts", "").startswith(key)]
     split = {k: {"tin": 0, "tout": 0, "usd": 0.0} for k in ("remote", "local")}
-    sessions, actions = defaultdict(float), defaultdict(float)
+    sessions, actions, sources = defaultdict(float), defaultdict(int), defaultdict(int)
     for e in rows:
         bucket = split.get(e.get("kind"), split["remote"])
         bucket["tin"] += e.get("tin", 0)
         bucket["tout"] += e.get("tout", 0)
         bucket["usd"] += e.get("usd", 0.0)
         sessions[e.get("session") or "-"] += e.get("usd", 0.0)
-        actions[e.get("action") or "-"] += e.get("usd", 0.0)
+        actions[e.get("action") or "-"] += e.get("tin", 0) + e.get("tout", 0)
+        sources[e.get("source") or "manual"] += e.get("tin", 0) + e.get("tout", 0)
     spent = round(split["remote"]["usd"], 4)
     start, end = _period_bounds(today, period)
     total_days = (end - start).days + 1
@@ -38,7 +49,8 @@ def summarize(entries, budget_usd, period, today):
         "daily_allowance_usd": round(remaining / left, 4), "projected_usd": round(spent / elapsed * total_days, 2),
         "over_budget": spent > budget_usd, "split": split,
         "by_session": {k: round(v, 4) for k, v in sorted(sessions.items(), key=lambda kv: -kv[1])},
-        "by_action": {k: round(v, 4) for k, v in sorted(actions.items(), key=lambda kv: -kv[1])},
+        "by_action": dict(sorted(actions.items(), key=lambda kv: -kv[1])),
+        "by_source": dict(sorted(sources.items(), key=lambda kv: -kv[1])),
     }
 
 
