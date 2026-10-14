@@ -3,136 +3,144 @@
 <meta name="color-scheme" content="light dark">
 <title>Second Brain</title>
 <style>
-/* Jetons. Un seul accent, une seule température de gris (zinc), un seul jeu de rayons.
-   Pas de police web: le dashboard doit marcher hors ligne, d'où les piles système. */
-:root{
-  --bg:#f6f6f7;--panel:#fcfcfd;--fg:#17171a;--muted:#585863;--line:#dcdce1;
-  --accent:#0f766e;--accent-fg:#fff;--ok:#0f766e;--warn:#9a5b00;--bad:#b42335;
-  --r-s:6px;--r-m:10px;
-  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  --out:cubic-bezier(.23,1,.32,1);
-}
-@media(prefers-color-scheme:dark){:root{
-  --bg:#0c0c0e;--panel:#141417;--fg:#ececef;--muted:#a1a1ab;--line:#2a2a30;
-  --accent:#2dd4bf;--accent-fg:#06201d;--ok:#2dd4bf;--warn:#f0b04a;--bad:#ff8091}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
-h1,h2,p{margin:0}
-.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.muted{color:var(--muted)}
-.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
-header{display:flex;align-items:center;gap:16px;padding:20px 0;border-bottom:1px solid var(--line)}
-h1{white-space:nowrap;font-size:20px;font-weight:650;letter-spacing:-.02em;flex:1}
-h1 small{font:13px var(--mono);color:var(--muted);margin-left:10px;letter-spacing:0}
-main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:48px;padding:32px 0 64px}
-@media(max-width:600px){#ts{display:none}.wrap{padding:0 16px}}
-@media(max-width:960px){main{grid-template-columns:1fr;gap:40px}}
-section{padding-top:20px;border-top:1px solid var(--line);margin-bottom:40px}
-section:first-child{border-top:0;padding-top:0}
-h2{font-size:15px;font-weight:650;margin-bottom:14px}
-button{font:inherit;font-size:14px;min-height:36px;padding:0 14px;border-radius:var(--r-s);border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;
-  transition:background-color 150ms ease,transform 120ms var(--out)}
-button:active{transform:scale(.97)}
-button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
-button:disabled{opacity:.5;cursor:not-allowed}
+/* Jetons: un accent, un gris, deux rayons. Piles système (hors ligne, pas de police web). */
+:root{--bg:#f6f6f7;--panel:#fcfcfd;--fg:#17171a;--muted:#585863;--line:#dcdce1;--accent:#0f766e;--accent-fg:#fff;--ok:#0f766e;--warn:#9a5b00;--bad:#b42335;
+  --r-s:6px;--r-m:12px;--sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--out:cubic-bezier(.23,1,.32,1)}
+@media(prefers-color-scheme:dark){:root{--bg:#0c0c0e;--panel:#141417;--fg:#ececef;--muted:#a1a1ab;--line:#2a2a30;--accent:#2dd4bf;--accent-fg:#06201d;--ok:#2dd4bf;--warn:#f0b04a;--bad:#ff8091}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}.num{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--muted)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+header{display:flex;align-items:center;gap:20px;padding:16px 0;border-bottom:1px solid var(--line)}
+h1{font-size:18px;font-weight:650;letter-spacing:-.02em;white-space:nowrap}h1 small{font:13px var(--mono);color:var(--muted);margin-left:8px}
+nav{display:flex;gap:4px;flex:1}nav button{border:0;color:var(--muted)}nav button[aria-selected=true]{color:var(--fg);background:color-mix(in srgb,var(--fg) 8%,transparent)}
+button{font:inherit;font-size:14px;min-height:36px;padding:0 14px;border-radius:var(--r-s);border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;transition:background-color 150ms ease,transform 120ms var(--out)}
+button:active{transform:scale(.97)}button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}button:disabled{opacity:.5;cursor:not-allowed}
 @media(hover:hover) and (pointer:fine){button:hover:not(:disabled){background:color-mix(in srgb,var(--fg) 7%,transparent)}button.primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 88%,var(--fg))}}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
-input{font:inherit;width:100%;min-height:36px;padding:0 10px;border-radius:var(--r-s);border:1px solid var(--line);background:var(--panel);color:var(--fg)}
-.field{margin-bottom:12px}.row{display:flex;gap:10px;align-items:flex-end}.row>*{flex:1}.row>button{flex:0 0 auto}
-.list>div{display:flex;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
-.list>div:last-child{border-bottom:0}
-.list .body{flex:1;min-width:0}.list .why{color:var(--muted);font-size:14px;max-width:65ch}
-.enter>*{animation:rise 320ms var(--out) both;animation-delay:calc(var(--i,0)*40ms)}
-@keyframes rise{from{opacity:0;transform:translateY(6px)}}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{font-weight:500;color:var(--muted);text-align:left;padding:0 12px 8px 0}
-td{padding:10px 12px 10px 0;border-top:1px solid var(--line)}
-.st{white-space:nowrap}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}kbd{font:12px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:8px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}input{font:inherit;width:100%;min-height:36px;padding:0 10px;border-radius:var(--r-s);border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+.view{display:none;padding:36px 0 72px}.view.on{display:block;animation:fade 180ms var(--out)}@keyframes fade{from{opacity:0;transform:translateY(4px)}}
+h2{font-size:15px;font-weight:650;margin-bottom:12px}.block{margin-bottom:44px}
+.home{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:56px;margin-bottom:56px}
+.next .t{font-size:24px;line-height:1.25;font-weight:620;letter-spacing:-.02em;margin:6px 0 8px;max-width:22ch}.next .why{color:var(--muted);max-width:55ch;margin-bottom:18px}
 .hero{font:600 40px/1.1 var(--mono);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.gauge{margin:18px 0 6px}.gauge line{stroke:var(--line);stroke-width:2}.gauge .spent{stroke:var(--fg);stroke-width:4;stroke-linecap:round}
-.gauge .proj{fill:none;stroke:var(--warn);stroke-width:2}.gauge text{fill:var(--muted);font:11px var(--mono)}
-.acts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-pre{margin:12px 0 0;padding:12px;border-radius:var(--r-s);background:var(--panel);border:1px solid var(--line);font:13px/1.5 var(--mono);white-space:pre-wrap;max-height:260px;overflow:auto}
-pre:empty{display:none}
-.sk{height:14px;border-radius:var(--r-s);background:var(--line);margin:10px 0;max-width:70%}
-.banner{margin-bottom:24px;padding:10px 14px;border-radius:var(--r-s);border:1px solid var(--warn);color:var(--warn);font-size:14px}
+details{margin-top:20px;color:var(--muted);font-size:14px}summary{cursor:pointer;min-height:28px}details .row{padding:10px 0;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center}details .row>div{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{display:inline-flex;gap:8px;align-items:center}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.split{display:grid;grid-template-columns:260px minmax(0,1fr);gap:40px}
+.rlist{display:flex;flex-direction:column;gap:2px}.rlist button{text-align:left;border:0;display:block;width:100%;padding:8px 12px;min-height:48px}
+.rlist button[aria-current=true]{background:color-mix(in srgb,var(--fg) 8%,transparent)}.rlist small{display:block;color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:16px 0 20px}.tabs button{border:0;border-radius:var(--r-s) var(--r-s) 0 0;color:var(--muted)}.tabs button[aria-selected=true]{color:var(--fg);box-shadow:inset 0 -2px var(--accent)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;margin:0 0 24px}.facts dt{font-size:13px;color:var(--muted)}.facts dd{margin:2px 0 0}
+.list>div{display:flex;gap:16px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}.list>div:last-child{border-bottom:0}.list .b{flex:1;min-width:0}
+pre{margin:0;padding:14px;border-radius:var(--r-s);background:var(--panel);border:1px solid var(--line);font:13px/1.55 var(--mono);white-space:pre-wrap;max-height:460px;overflow:auto}pre:empty{display:none}
+.gauge line{stroke:var(--line);stroke-width:2}.gauge .spent{stroke:var(--fg);stroke-width:4;stroke-linecap:round}.gauge .proj{fill:none;stroke:var(--warn);stroke-width:2}.gauge text{fill:var(--muted);font:11px var(--mono)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:40px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.field{margin-bottom:14px;max-width:520px}.row2{display:flex;gap:10px}.row2>input{flex:1}
+.banner{margin:16px 0 0;padding:10px 14px;border-radius:var(--r-s);border:1px solid var(--warn);color:var(--warn);font-size:14px}
+.empty{color:var(--muted);padding:8px 0}.sk{height:14px;border-radius:var(--r-s);background:var(--line);margin:10px 0;max-width:60%}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:var(--r-s);font-size:14px;max-width:90vw;transition:opacity 180ms var(--out),transform 180ms var(--out)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+dialog{border:1px solid var(--line);border-radius:var(--r-m);background:var(--panel);color:var(--fg);padding:0;width:min(560px,92vw);margin-top:12vh}dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog input{border:0;border-bottom:1px solid var(--line);border-radius:0;min-height:48px;font-size:16px}dialog ul{list-style:none;margin:0;padding:6px;max-height:320px;overflow:auto}
+dialog li{padding:9px 12px;border-radius:var(--r-s);cursor:pointer}dialog li[aria-selected=true]{background:color-mix(in srgb,var(--fg) 9%,transparent)}
 svg text{fill:var(--fg);font:12px var(--sans)}
-.edges{margin-top:8px;font-size:13px;color:var(--muted)}
-@media(prefers-reduced-motion:reduce){.enter>*{animation:none}button{transition:none}button:active{transform:none}}
+@media(max-width:860px){.home,.split{grid-template-columns:1fr;gap:32px}nav{overflow-x:auto}.wrap{padding:0 16px}header{flex-wrap:wrap;gap:10px}#pal span{display:none}}
+@media(prefers-reduced-motion:reduce){.view.on{animation:none}button,#toast{transition:none}button:active{transform:none}}
 </style></head><body>
 <div class="wrap">
-<header><h1>Second Brain<small>iris</small></h1><span id="ts" class="num muted"></span><button id="sync" class="primary">Synchroniser Git</button></header>
+<header><h1>Second Brain<small>iris</small></h1>
+<nav role="tablist" aria-label="Vues"><button role="tab" data-v="accueil">Accueil</button><button role="tab" data-v="repos">Repos</button><button role="tab" data-v="tokens">Tokens</button><button role="tab" data-v="actions">Actions</button></nav>
+<button id="pal"><span>Rechercher</span><kbd>Ctrl K</kbd></button><button id="sync">Synchroniser</button></header>
 <div id="banner"></div>
-<main>
-<div>
-  <section><h2>À faire ensuite</h2><div id="sug" class="list"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></section>
-  <section><h2>Repos</h2><div style="overflow-x:auto"><table id="repos"></table></div></section>
-  <section><h2>Liens entre repos</h2><svg id="net" viewBox="0 0 640 300" width="640" style="max-width:100%;height:auto" role="img" aria-label="Graphe des liens entre repos"></svg><p id="edges" class="edges"></p></section>
+
+<section class="view" id="v-accueil" aria-label="Accueil">
+  <div class="home"><div class="next" id="next"><div class="sk"></div><div class="sk"></div></div><div id="budget"></div></div>
+  <div class="block"><h2>Repos</h2><div class="chips" id="chips"></div></div>
+</section>
+
+<section class="view" id="v-repos" aria-label="Repos"><div class="split"><div><h2>Repos connectés</h2><div class="rlist" id="rlist"></div>
+  <p class="muted" style="font-size:13px;margin-top:16px">Connecte ta racine avec <span class="num">iris connect &lt;dossier&gt;</span>: les repos sont lus sur place.</p></div>
+  <div id="rdetail"><p class="empty">Choisis un repo.</p></div></div></section>
+
+<section class="view" id="v-tokens" aria-label="Tokens"><div class="cols"><div id="tbudget"></div><div><h2>Par source</h2><div class="list" id="bysrc"></div></div><div><h2>Par repo</h2><div class="list" id="byrepo"></div></div></div>
+  <p class="muted" style="margin-top:32px;max-width:65ch;font-size:14px">Les tokens de Gemini CLI et Claude Code sont lus dans leurs journaux locaux. Cursor n'écrit rien en local: saisis-les avec <span class="num">iris tokens add</span>. Les modèles locaux (<span class="num">iris ask</span>) sont comptés exactement.</p>
+  <p style="margin-top:16px"><button data-a="tokens.ingest">Importer les logs maintenant</button></p></section>
+
+<section class="view" id="v-actions" aria-label="Actions"><div class="cols"><div>
+  <h2>Lancer</h2><div class="acts" id="acts"></div>
+  <div class="field"><label for="prompt">Prompt pour le pack de contexte</label><div class="row2"><input id="prompt" autocomplete="off"><button data-a="context.preview">Prévisualiser</button></div></div>
+  <div class="field"><label for="ticket">Plan Jira, en lecture seule</label><div class="row2"><input id="ticket" placeholder="PROJ-123" autocomplete="off"><input id="env" placeholder="preprod" aria-label="Environnement" autocomplete="off"></div></div>
+  <div class="acts"><button data-a="jira.release_plan">Plan de release</button><button data-a="jira.deploy_plan">Plan de déploiement</button></div>
+  <p class="muted" style="font-size:13px;margin-bottom:12px">Les actions qui modifient Jira ou GitLab restent dans jira-cli.</p><pre id="out" aria-live="polite"></pre></div>
+  <div><h2>À archiver</h2><div class="list" id="obs"></div><h2 style="margin-top:32px">Dernières commandes</h2><div class="list num" id="recent" style="font-size:13px"></div></div></div></section>
 </div>
-<div>
-  <section><h2>Budget tokens</h2><div id="tok"><div class="sk"></div><div class="sk"></div></div></section>
-  <section><h2>Actions</h2>
-    <div class="acts" id="acts"></div>
-    <div class="field"><label for="prompt">Prompt pour le pack de contexte</label><div class="row"><input id="prompt" autocomplete="off"><button data-a="context.preview">Prévisualiser</button></div></div>
-    <div class="field"><label for="ticket">Plan Jira (lecture seule)</label>
-      <div class="row"><input id="ticket" placeholder="PROJ-123" autocomplete="off" aria-label="Clé du ticket"><input id="env" placeholder="preprod" autocomplete="off" aria-label="Environnement"></div></div>
-    <div class="acts"><button data-a="jira.release_plan">Plan de release</button><button data-a="jira.deploy_plan">Plan de déploiement</button></div>
-    <p class="muted" style="font-size:13px">Les actions qui modifient Jira ou GitLab restent dans jira-cli.</p>
-    <pre id="out" aria-live="polite"></pre></section>
-  <section><h2>À archiver</h2><div id="obs" class="list"></div></section>
-  <section><h2>Dernières commandes</h2><div id="recent" class="list num" style="font-size:13px"></div></section>
-</div>
-</main></div>
+<div id="toast" role="status"></div>
+<dialog id="dlg" aria-label="Palette de commandes"><input id="q" placeholder="Aller à un repo, lancer une action…" autocomplete="off" aria-label="Rechercher"><ul id="ul" role="listbox"></ul></dialog>
 <script>
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const H={'X-Iris':'1','Content-Type':'application/json'},usd=n=>n.toLocaleString('fr-FR',{style:'currency',currency:'USD',currencyDisplay:'narrowSymbol'});
-let first=true,live=true;
-const flag=(ok,txt,lvl)=>`<span class="st ${lvl||(ok?'ok':'bad')}">${ok?'✓':lvl==='warn'?'!':'✕'} ${txt}</span>`;
+const H={'X-Iris':'1','Content-Type':'application/json'},nf=n=>Number(n).toLocaleString('fr-FR');
+const usd=n=>n.toLocaleString('fr-FR',{style:'currency',currency:'USD',currencyDisplay:'narrowSymbol'});
+const VIEWS=['accueil','repos','tokens','actions'],ACTS=[['repos.sync','Synchroniser les repos'],['graph.build','Régénérer les graphes'],['cards.build','Créer les fiches'],['tokens.ingest','Importer les logs'],['usage.audit','Auditer les actifs'],['retex.run','Faire le rétex']];
+let S=null,last='',live=true,view='accueil',repo=null,sub='apercu',cache={};
+const flag=(ok,t,l)=>`<span class="${l||(ok?'ok':'bad')}">${ok?'✓':l==='warn'?'!':'✕'} ${t}</span>`;
+const repoState=r=>r.dirty?flag(false,'modifié','warn'):r.behind?flag(false,`${r.behind} en retard`,'warn'):flag(true,'à jour');
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),3500)}
+function route(){const [v,r]=location.hash.slice(2).split('/');view=VIEWS.includes(v)?v:'accueil';if(r)repo=decodeURIComponent(r);
+  document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+view));
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===view));
+  if(S)paint();if(view==='repos'&&repo)openRepo(repo)}
+const go=(v,r)=>{location.hash='/'+v+(r?'/'+encodeURIComponent(r):'')};
 function gauge(t){const W=320,x=v=>8+Math.min(1,v/t.budget_usd)*(W-16);
-  return `<svg class="gauge" viewBox="0 0 ${W} 34" width="100%" role="img" aria-label="Dépensé ${usd(t.spent_usd)}, projeté ${usd(t.projected_usd)} sur ${usd(t.budget_usd)}">
-  <line x1="8" x2="${W-8}" y1="14" y2="14"/><line class="spent" x1="8" x2="${Math.max(10,x(t.spent_usd))}" y1="14" y2="14"/>
-  <circle class="proj" cx="${x(t.projected_usd)}" cy="14" r="5"/><text x="8" y="32">0</text><text x="${W-8}" y="32" text-anchor="end">${t.budget_usd} $</text></svg>`}
-function layout(names,edges,w,h){const n=names.length,p=names.map((_,i)=>({x:w/2+Math.cos(6.283*i/n)*w/3,y:h/2+Math.sin(6.283*i/n)*h/3.2})),ix=Object.fromEntries(names.map((m,i)=>[m,i]));
-  for(let k=0;k<150;k++){for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){let dx=p[i].x-p[j].x,dy=p[i].y-p[j].y,d2=Math.max(dx*dx+dy*dy,40),f=4000/d2,d=Math.sqrt(d2);
-      p[i].x+=dx/d*f;p[i].y+=dy/d*f;p[j].x-=dx/d*f;p[j].y-=dy/d*f}
-    edges.forEach(e=>{const a=p[ix[e.from]],b=p[ix[e.to]];if(!a||!b)return;const dx=b.x-a.x,dy=b.y-a.y;a.x+=dx*.02;a.y+=dy*.02;b.x-=dx*.02;b.y-=dy*.02});
-    p.forEach(q=>{q.x+=(w/2-q.x)*.01;q.y+=(h/2-q.y)*.01;q.x=Math.min(w-90,Math.max(20,q.x));q.y=Math.min(h-20,Math.max(20,q.y))})}
-  return p}
-function render(s){
-  const cls=first?'list enter':'list',t=s.tokens;
-  $('ts').textContent='Mis à jour '+s.generated_at.slice(11,19);
-  $('sug').className=cls;
-  $('sug').innerHTML=s.suggestions.map((g,i)=>`<div style="--i:${i}"><div class="body"><div>${esc(g.title)}</div><div class="why">${esc(g.why)}</div></div>${g.action?`<button data-a="${g.action}">Lancer</button>`:''}</div>`).join('')||'<p class="muted">Rien en attente. Le brain est à jour.</p>';
-  $('tok').innerHTML=`<p class="hero ${t.over_budget?'bad':''}">${usd(t.remaining_usd)}</p><p class="muted">restants sur ${usd(t.budget_usd)} (${t.period==='year'?'année':'mois'})</p>${gauge(t)}
-   <p class="muted num" style="font-size:13px">${usd(t.daily_allowance_usd)} par jour · projection ${usd(t.projected_usd)}</p>
-   <p class="num" style="font-size:13px;margin-top:8px">Distant ${(t.split.remote.tin+t.split.remote.tout).toLocaleString('fr-FR')} tokens · Local ${(t.split.local.tin+t.split.local.tout).toLocaleString('fr-FR')} tokens</p>`;
-  $('repos').innerHTML='<tr><th>Repo</th><th>Branche</th><th>Retard</th><th>Copie locale</th><th>Graphe</th><th>Docs</th><th>Fiche</th></tr>'+(s.repos.map(r=>{
-    const g=!r.graph.exists?flag(false,'absent'):r.graph.stale?flag(false,'périmé','warn'):flag(true,'frais');
-    return `<tr><td>${esc(r.name)}</td><td class="num">${esc(r.branch)}</td><td class="num">${r.behind??'?'}</td><td>${r.dirty?flag(false,'modifiée','warn'):flag(true,'propre')}</td><td>${g}</td><td class="num">${r.docs.length}/3</td><td>${r.card?flag(true,'oui'):flag(false,'non','warn')}</td></tr>`}).join('')||'<tr><td colspan="7" class="muted">Aucun repo dans 05-repos. Lance iris repos clone &lt;url&gt;.</td></tr>');
-  const names=s.repos.map(r=>r.name);
-  if(names.length){const p=layout(names,s.edges,640,300),ix=Object.fromEntries(names.map((m,i)=>[m,i]));
-    const xs=p.map(q=>q.x),ys=p.map(q=>q.y),lab=Math.max(...names.map(n=>n.length))*7+24,x0=Math.min(...xs)-24,y0=Math.min(...ys)-24;
-    const vw=Math.max(...xs)-x0+lab;$('net').setAttribute('viewBox',`${x0} ${y0} ${vw} ${Math.max(...ys)-y0+24}`);$('net').setAttribute('width',Math.round(vw));
-    $('net').innerHTML=s.edges.filter(e=>ix[e.from]!=null&&ix[e.to]!=null).map(e=>`<line x1="${p[ix[e.from]].x}" y1="${p[ix[e.from]].y}" x2="${p[ix[e.to]].x}" y2="${p[ix[e.to]].y}" stroke="var(--muted)" stroke-width="${Math.min(4,1+e.weight/3)}" stroke-opacity=".6"/>`).join('')+
-      s.repos.map((r,i)=>`<g><circle cx="${p[i].x}" cy="${p[i].y}" r="6" fill="${r.dirty?'var(--warn)':r.graph.stale?'var(--bad)':'var(--accent)'}"/><text x="${p[i].x+11}" y="${p[i].y+4}">${esc(r.name)}</text></g>`).join('');
-    $('edges').textContent=s.edges.map(e=>`${e.from} cite ${e.to} (${e.weight})`).join(' · ')||'Aucun lien détecté entre les repos.'}
-  $('obs').innerHTML=s.obsolete.map(o=>`<div><div class="body">${esc(o.kind)} <b>${esc(o.name)}</b><div class="why">${o.verdict==='archive'?'Jamais utilisé':'Inactif'} · ${o.uses} usage(s) · ${o.age_days} jours</div></div></div>`).join('')||'<p class="muted">Rien à archiver.</p>';
-  $('recent').innerHTML=s.recent.slice(0,8).map(e=>`<div style="padding:6px 0"><span class="muted">${esc(e.ts.slice(11,19))}</span> ${esc(e.name)} ${esc(e.sub||'')} ${e.rc?'<span class="bad">échec</span>':''}</div>`).join('')||'<p class="muted">Aucune commande enregistrée.</p>';
-  first=false}
+  return `<svg class="gauge" viewBox="0 0 ${W} 34" width="100%" role="img" aria-label="Dépensé ${usd(t.spent_usd)}, projeté ${usd(t.projected_usd)}"><line x1="8" x2="${W-8}" y1="14" y2="14"/><line class="spent" x1="8" x2="${Math.max(10,x(t.spent_usd))}" y1="14" y2="14"/><circle class="proj" cx="${x(t.projected_usd)}" cy="14" r="5"/><text x="8" y="32">0</text><text x="${W-8}" y="32" text-anchor="end">${t.budget_usd} $</text></svg>`}
+const budgetHtml=(t,full)=>`<h2>Budget tokens</h2><p class="hero ${t.over_budget?'bad':''}">${usd(t.remaining_usd)}</p><p class="muted">restants sur ${usd(t.budget_usd)} (${t.period==='year'?'année':'mois'})</p>${full?gauge(t)+`<p class="num muted" style="font-size:13px">${usd(t.daily_allowance_usd)} par jour · projection ${usd(t.projected_usd)}</p><p class="num" style="font-size:13px;margin-top:8px">Distant ${nf(t.split.remote.tin+t.split.remote.tout)} · Local ${nf(t.split.local.tin+t.split.local.tout)} tokens</p>`:''}`;
+const rows=(o,fmt)=>Object.entries(o).slice(0,8).map(([k,v])=>`<div><span class="b">${esc(k)}</span><span class="num">${fmt(v)}</span></div>`).join('')||'<p class="empty">Rien pour l\'instant.</p>';
+function paint(){const s=S,t=s.tokens;
+  if(view==='accueil'){const g=s.suggestions;
+    $('next').innerHTML=g.length?`<p class="muted" style="font-size:13px">Prochaine action</p><p class="t">${esc(g[0].title)}</p><p class="why">${esc(g[0].why)}</p>${g[0].action?`<button class="primary" data-a="${g[0].action}">Lancer</button>`:''}`+
+      (g.length>1?`<details><summary>${g.length-1} autre(s) suggestion(s)</summary>${g.slice(1).map(x=>`<div class="row"><div>${esc(x.title)}<br><span style="font-size:13px">${esc(x.why)}</span></div>${x.action?`<button data-a="${x.action}">Lancer</button>`:''}</div>`).join('')}</details>`:''):'<p class="t">Tout est à jour.</p><p class="why">Rien à faire pour le moment.</p>';
+    $('budget').innerHTML=budgetHtml(t,false);
+    $('chips').innerHTML=s.repos.map(r=>`<button class="chip" data-repo="${esc(r.name)}">${esc(r.name)} ${repoState(r)}</button>`).join('')||'<p class="empty">Aucun repo. Lance <span class="num">iris connect &lt;dossier&gt;</span>.</p>'}
+  if(view==='repos')$('rlist').innerHTML=s.repos.map(r=>`<button data-repo="${esc(r.name)}" ${r.name===repo?'aria-current="true"':''}>${esc(r.name)}<small>${repoState(r)}</small></button>`).join('')||'<p class="empty">Aucun repo.</p>';
+  if(view==='tokens'){$('tbudget').innerHTML=budgetHtml(t,true);$('bysrc').innerHTML=rows(t.by_source,nf);$('byrepo').innerHTML=rows(t.by_action,nf)}
+  if(view==='actions'){$('obs').innerHTML=s.obsolete.map(o=>`<div><span class="b">${esc(o.kind)} <b>${esc(o.name)}</b><br><span class="muted" style="font-size:13px">${o.verdict==='archive'?'Jamais utilisé':'Inactif'} · ${o.uses} usage(s)</span></span></div>`).join('')||'<p class="empty">Rien à archiver.</p>';
+    $('recent').innerHTML=s.recent.slice(0,8).map(e=>`<div><span class="muted">${esc(e.ts.slice(11,19))}</span><span class="b">${esc(e.name)} ${esc(e.sub||'')}</span>${e.rc?'<span class="bad">échec</span>':''}</div>`).join('')||'<p class="empty">Aucune commande.</p>'}}
+async function openRepo(name){repo=name;if(S)paint();const box=$('rdetail');
+  if(!cache[name]){box.innerHTML='<div class="sk"></div><div class="sk"></div>';try{cache[name]=await (await fetch('/api/repo?name='+encodeURIComponent(name))).json()}catch(e){box.innerHTML='<p class="empty">Détail indisponible hors serveur.</p>';return}}
+  const d=cache[name];if(!d.status){box.innerHTML='<p class="empty">Repo introuvable.</p>';return}
+  const st=d.status,g=d.graph,tabs=[['apercu','Aperçu'],['docs','Docs'],['graphe','Graphe'],['commits','Commits']];let body='';
+  if(sub==='apercu')body=`<dl class="facts"><div><dt>Branche</dt><dd class="num">${esc(st.branch)}</dd></div><div><dt>Synchronisation</dt><dd>${repoState({dirty:st.dirty,behind:st.behind})}</dd></div>
+    <div><dt>Graphe</dt><dd>${!g.exists?flag(false,'absent'):g.stale?flag(false,'périmé','warn'):flag(true,'frais')}</dd></div><div><dt>Fiche wiki</dt><dd>${d.card?flag(true,'oui'):flag(false,'non','warn')}</dd></div>
+    <div><dt>Docs</dt><dd>${Object.entries(d.docs_present).map(([k,v])=>flag(v,k.replace('.md',''))).join(' · ')}</dd></div><div><dt>Tokens consommés</dt><dd class="num">${nf(d.tokens.tin+d.tokens.tout)}</dd></div>
+    <div><dt>Langages</dt><dd class="num">${Object.entries(d.languages).map(([k,v])=>k+' '+v).join(' · ')||'-'}</dd></div></dl><h2>README</h2><pre>${esc(d.readme)}</pre>${d.readme?'':'<p class="empty">Pas de README.</p>'}`;
+  if(sub==='docs')body=`<div class="list">${d.md_files.map(m=>`<div><span class="b num">${esc(m.path)}</span><span class="muted num">${nf(m.bytes)} o</span></div>`).join('')||'<p class="empty">Aucun fichier Markdown.</p>'}</div>`;
+  if(sub==='graphe')body=d.graph_md?`<pre>${esc(d.graph_md)}</pre>`:`<p class="empty">Pas encore de graphe pour ce repo.</p><p><button data-a="graph.build" data-repo-param="${esc(name)}">Générer le graphe</button></p>`;
+  if(sub==='commits')body=`<div class="list">${d.commits.map(c=>`<div><span class="num muted">${esc(c.hash)}</span><span class="b">${esc(c.subject)}</span><span class="muted" style="font-size:13px">${esc(c.author)}, ${esc(c.when)}</span></div>`).join('')||'<p class="empty">Aucun commit.</p>'}</div><h2 style="margin-top:28px">Branches</h2><p class="num muted" style="font-size:13px">${d.branches.map(esc).join(' · ')}</p>`;
+  box.innerHTML=`<h2 style="font-size:20px;margin:0">${esc(name)}</h2><p class="num muted" style="font-size:13px">${esc(d.path)}</p><div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-sub="${k}" aria-selected="${k===sub}">${l}</button>`).join('')}</div>${body}`}
 async function load(){let s;
-  try{s=await (await fetch('/api/state')).json();live=true;$('banner').innerHTML=''}
-  catch(e){try{s=await (await fetch('state.json')).json();live=false;$('banner').innerHTML='<div class="banner">Serveur injoignable: dernier état enregistré, actions désactivées.</div>'}
-    catch(e2){$('banner').innerHTML='<div class="banner">Aucune donnée. Lance ./iris dashboard serve.</div>';return}}
-  document.querySelectorAll('button').forEach(b=>b.disabled=!live);render(s)}
-async function act(name){const p={prompt:$('prompt').value,ticket:$('ticket').value.trim(),env:$('env').value.trim()};
-  $('out').textContent='En cours: '+name+' …';
+  try{s=await (await fetch('/api/state')).json();live=true;$('banner').innerHTML=''}catch(e){try{s=await (await fetch('state.json')).json();live=false;$('banner').innerHTML='<div class="banner">Serveur injoignable: dernier état enregistré, actions désactivées.</div>'}catch(e2){$('banner').innerHTML='<div class="banner">Aucune donnée. Lance ./iris dashboard serve.</div>';return}}
+  document.querySelectorAll('button[data-a],#sync').forEach(b=>b.disabled=!live);
+  const key=JSON.stringify({...s,generated_at:0});S=s;if(key!==last){last=key;paint()}}
+async function act(name,extra={}){const p={prompt:$('prompt').value,ticket:$('ticket').value.trim(),env:$('env').value.trim(),...extra};
+  $('out').textContent='En cours: '+name+' …';toast('En cours…');
   try{const r=await (await fetch('/api/run',{method:'POST',headers:H,body:JSON.stringify({action:name,params:p})})).json();
-    $('out').textContent=(r.ok?'':'Échec. ')+(r.output||'Terminé, sans sortie.')}catch(e){$('out').textContent='Échec. Serveur injoignable.'}
-  load()}
-$('acts').innerHTML=[['repos.sync','Synchroniser'],['graph.build','Graphes'],['cards.build','Fiches'],['usage.audit','Audit'],['retex.run','Rétex']].map(([a,l])=>`<button data-a="${a}">${l}</button>`).join('');
-document.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(a)act(a)});
-$('sync').onclick=async()=>{$('sync').textContent='Synchronisation…';await fetch('/api/sync',{method:'POST',headers:H});$('sync').textContent='Synchroniser Git';load()};
-load();setInterval(load,5000);
+    $('out').textContent=(r.ok?'':'Échec. ')+(r.output||'Terminé, sans sortie.');toast(r.ok?'Terminé':'Échec: '+(r.output||'').split('\n')[0].slice(0,120));
+    if(name==='context.preview'||name.startsWith('jira.'))go('actions')}catch(e){toast('Serveur injoignable')}
+  cache={};last='';await load();if(view==='repos'&&repo)openRepo(repo)}
+$('acts').innerHTML=ACTS.map(([a,l])=>`<button data-a="${a}">${l}</button>`).join('');
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.a)act(t.dataset.a,t.dataset.repoParam?{repo:t.dataset.repoParam}:{});
+  else if(t.dataset.repo)go('repos',t.dataset.repo);else if(t.dataset.sub){sub=t.dataset.sub;openRepo(repo)}else if(t.dataset.v)go(t.dataset.v)});
+$('sync').onclick=async()=>{$('sync').textContent='Synchronisation…';await fetch('/api/sync',{method:'POST',headers:H});$('sync').textContent='Synchroniser';toast('Repos synchronisés');cache={};last='';load()};
+/* Palette de commandes (Ctrl/Cmd+K) */
+const dlg=$('dlg'),q=$('q'),ul=$('ul');let items=[],sel=0;
+const palItems=()=>[...VIEWS.map(x=>({l:'Aller à '+x,f:()=>go(x)})),...(S?S.repos:[]).map(x=>({l:'Repo '+x.name,f:()=>go('repos',x.name)})),...ACTS.map(([k,l])=>({l,f:()=>act(k)}))];
+function draw(){const t=q.value.toLowerCase();items=palItems().filter(i=>i.l.toLowerCase().includes(t));sel=Math.min(sel,Math.max(0,items.length-1));
+  ul.innerHTML=items.map((i,k)=>`<li role="option" data-k="${k}" aria-selected="${k===sel}">${esc(i.l)}</li>`).join('')||'<li class="muted">Aucun résultat</li>'}
+function openPal(){q.value='';sel=0;draw();dlg.showModal();q.focus()}
+$('pal').onclick=openPal;
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();dlg.open?dlg.close():openPal()}});
+q.addEventListener('input',()=>{sel=0;draw()});
+q.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){sel=Math.min(items.length-1,sel+1);draw();e.preventDefault()}else if(e.key==='ArrowUp'){sel=Math.max(0,sel-1);draw();e.preventDefault()}else if(e.key==='Enter'&&items[sel]){dlg.close();items[sel].f()}});
+ul.addEventListener('click',e=>{const li=e.target.closest('li[data-k]');if(li){dlg.close();items[+li.dataset.k].f()}});
+window.addEventListener('hashchange',route);route();load();setInterval(load,5000);
 </script></body></html>

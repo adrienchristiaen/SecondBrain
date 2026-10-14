@@ -2,6 +2,15 @@
 
 Cerveau de développement *local-first*: Markdown plat (lisible par humains et LLM) + moteur déterministe **Iris CLI** (Python stdlib, zéro dépendance) pour ne dépenser des tokens distants que sur la réflexion complexe.
 
+## Brancher tes repos et tes CLI
+
+```bash
+./iris connect <dossier-racine-de-tes-repos>   # lecture sur place, aucun clone
+./iris ingest                                  # tokens de Claude Code et Gemini CLI (lus dans leurs journaux locaux)
+./iris mcp --print-config                      # enregistre Iris comme outil dans Gemini CLI, Claude Code, Cursor
+./iris ask --context "question"                # LLM local (Ollama), tokens comptés exactement
+```
+
 ## Démarrage
 
 ```bash

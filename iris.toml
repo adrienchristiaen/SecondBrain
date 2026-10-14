@@ -14,3 +14,7 @@ out = 2.50
 
 [datahub]
 url = ""   # ex: https://datahub.exemple.interne ; token via la variable DATAHUB_TOKEN
+
+[llm]            # LLM local compatible Ollama
+url = "http://127.0.0.1:11434"
+model = ""       # ex: le nom affiché par `ollama list`

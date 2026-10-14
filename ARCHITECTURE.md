@@ -18,6 +18,10 @@ Une commande = un module dans `commands/` exposant `NAME` et `register(sub)`; `r
 
 | Commande | Rôle | Module |
 |---|---|---|
+| `connect` | connecte une racine locale de repos (lue sur place) | `lib/workspace.py` |
+| `ingest` | tokens des journaux Claude Code / Gemini CLI | `lib/ingest.py` |
+| `mcp` | serveur MCP stdio | `lib/mcpserver.py` |
+| `ask` | LLM local (Ollama) | `lib/localllm.py` |
 | `tokens add/report` | journal, coût, budget restant, projection | `lib/tokenmath.py` |
 | `repos status/sync/clone` | runner Git (ff-only, jamais de checkout forcé) | `lib/gitrun.py` |
 | `graph` | graphe d'architecture par AST → `03-wiki/graphs` | `lib/graphast.py` |
@@ -41,6 +45,13 @@ Chaque commande lancée est journalisée dans `.brain/usage.jsonl`: c'est ce qui
 
 ## Dashboard
 Serveur `http.server` lié à 127.0.0.1 (stdlib), page unique sans dépendance. `GET /api/state` (agrégat JSON), `POST /api/sync` (pull des repos). `dashboard build` produit une version statique lisible hors serveur (sans bouton de sync). Rafraîchissement toutes les 5 s.
+
+## Voir et contrôler les CLI (Gemini CLI, Claude Code, Cursor, modèles locaux)
+Une page web ne voit pas tes terminaux. Le pont est le serveur local d'Iris, par trois canaux:
+1. **Observation passive** (`iris ingest`, relancé toutes les 30 s par le dashboard): lit `~/.claude/projects/*/*.jsonl` et `~/.gemini/tmp/*/chats/*.json`, déduplique par identifiant de message, rattache chaque usage au repo par le chemin du dossier de travail. Le format Gemini n'est pas vérifié sur toutes les versions.
+2. **Outil appelé par l'agent** (`iris mcp`): serveur MCP stdio. L'agent demande `iris_context` au lieu de lire des repos entiers; chaque appel est journalisé.
+3. **Modèles locaux** (`iris ask`): client Ollama; `prompt_eval_count` et `eval_count` donnent des tokens exacts.
+Limite: Cursor n'écrit pas ses tokens en local (saisie avec `iris tokens add`), et la page ne voit pas le texte de la réponse en cours, seulement les sessions terminées dans les journaux.
 
 ## Pilotage depuis le navigateur
 `POST /api/run {action, params}` n'exécute que la liste blanche de `lib/actions.py` (sync, graphes, fiches, audit, rétex, pack de contexte, plans `jira-cli release|deploy --dry-run`), en argv sans shell, avec validation des paramètres. Les POST exigent l'en-tête `X-Iris` et un Host local. Les actions qui modifient Jira ou GitLab restent dans `jira-cli`, avec leur confirmation.

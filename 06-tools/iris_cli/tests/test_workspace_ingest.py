@@ -113,3 +113,25 @@ class LocalLlmTest(unittest.TestCase):
         res = localllm.generate(ctx.cfg, "q", opener=lambda req, timeout: io.BytesIO(
             b'{"response": "ok", "prompt_eval_count": 12, "eval_count": 3}'))
         self.assertEqual((res["text"], res["tin"], res["tout"]), ("ok", 12, 3))
+
+
+class RepoApiTest(unittest.TestCase):
+    def test_repo_endpoint(self):
+        import threading
+        import urllib.error
+        import urllib.request
+        from iris_cli.lib import dashserver
+        ctx = make_ctx()
+        make_repo(ctx.layout("repos"), "api", {"README.md": "# api"})
+        server = dashserver.make_server(ctx, 0)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        try:
+            self.assertEqual(json.load(urllib.request.urlopen(base + "/api/repo?name=api"))["name"], "api")
+            with self.assertRaises(urllib.error.HTTPError) as c:
+                urllib.request.urlopen(base + "/api/repo?name=../x")
+            c.exception.close()
+            self.assertEqual(c.exception.code, 404)
+        finally:
+            server.shutdown()
+            server.server_close()
