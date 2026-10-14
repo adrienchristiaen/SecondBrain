@@ -129,10 +129,12 @@ class ActionsTest(unittest.TestCase):
             req = urllib.request.Request(base + "/api/run", data=b"{}", method="POST")
             with self.assertRaises(urllib.error.HTTPError) as c:
                 urllib.request.urlopen(req)
+            c.exception.close()
             self.assertEqual(c.exception.code, 403)
             req = urllib.request.Request(base + "/api/state", headers={"Host": "evil.example"})
-            with self.assertRaises(urllib.error.HTTPError):
+            with self.assertRaises(urllib.error.HTTPError) as c2:
                 urllib.request.urlopen(req)
+            c2.exception.close()
             req = urllib.request.Request(base + "/api/run", data=json.dumps({"action": "x"}).encode(), method="POST", headers={"X-Iris": "1"})
             self.assertFalse(json.load(urllib.request.urlopen(req))["ok"])
         finally:

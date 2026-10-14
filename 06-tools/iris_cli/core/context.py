@@ -9,6 +9,9 @@ class Ctx:
     root: Path
     cfg: dict
 
+    def __post_init__(self):
+        self.root = Path(self.root).resolve()
+
     def layout(self, key):
         return self.root / self.cfg["layout"][key]
 
