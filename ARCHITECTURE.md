@@ -48,3 +48,6 @@ Le panneau Suggestions vient de `lib/suggest.py` (fonction pure sur l'état): ch
 
 ## Données locales
 `.brain/` (git-ignoré): `tokens.jsonl`, `usage.jsonl`, `dashboard/`.
+
+## Design du dashboard
+Refonte guidée par trois sources: Emil Kowalski (mouvement: ease-out, 120 à 320 ms, press à 0,97, hover seulement sur pointeur fin, transform et opacity uniquement), Impeccable (anti-patterns: pas de cartes imbriquées, de pastille qui pulse, de dégradé ou de halo, hiérarchie typographique nette, cibles de 36 px) et Taste (un accent, un gris, un jeu de rayons, clair et sombre, états de chargement, vide et erreur, respect de `prefers-reduced-motion`). Pas de police web: le dashboard reste utilisable hors ligne.
